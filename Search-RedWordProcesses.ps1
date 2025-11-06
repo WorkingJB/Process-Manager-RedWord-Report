@@ -11,9 +11,16 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.1
+    Version: 1.2
 
 .CHANGELOG
+    v1.2 - Enhanced authentication with detailed debugging output
+         - Added support for any Process Manager URL (not just demo)
+         - Improved error handling with clear user messages
+         - Added "Press any key to exit" to prevent PowerShell auto-close
+         - Better Search API authentication with fallback to main token
+         - Added verbose logging for all API calls
+         - Improved User ID and Tenant ID extraction with error handling
     v1.1 - Fixed URL parsing to support both base URLs and full tenant URLs
          - Fixed variable name conflict with PowerShell $host variable
          - Improved tenant ID extraction logic
@@ -136,23 +143,11 @@ function Get-ProcessManagerToken {
     param(
         [string]$BaseUrl,
         [string]$Username,
-        [string]$Password
+        [string]$Password,
+        [string]$TenantId = $null
     )
 
     Write-Host "`nAuthenticating to Process Manager..." -ForegroundColor Yellow
-
-    # First, we need to get the tenant ID by making an initial request
-    # Try to access the main page to get redirected or find tenant
-    try {
-        $response = Invoke-WebRequest -Uri $BaseUrl -UseBasicParsing -MaximumRedirection 0 -ErrorAction SilentlyContinue
-    }
-    catch {
-        # This is expected, we're just trying to find the tenant
-    }
-
-    # Try common authentication endpoint pattern
-    # The tenant ID is usually part of the URL path
-    $authUrl = "$BaseUrl/oauth2/token"
 
     $body = @{
         grant_type = 'password'
@@ -160,11 +155,38 @@ function Get-ProcessManagerToken {
         password = $Password
     }
 
+    # If tenant ID is provided, try that first
+    if ($TenantId) {
+        $authUrl = "$BaseUrl/$TenantId/oauth2/token"
+        Write-Host "  Trying: $authUrl" -ForegroundColor Gray
+
+        try {
+            $response = Invoke-RestMethod -Uri $authUrl -Method Post -Body $body -ContentType 'application/x-www-form-urlencoded'
+
+            if ($response.access_token) {
+                Write-Host "  Authentication successful!" -ForegroundColor Green
+                return @{
+                    AccessToken = $response.access_token
+                    TokenType = $response.token_type
+                    ExpiresIn = $response.expires_in
+                    TenantId = $TenantId
+                }
+            }
+        }
+        catch {
+            Write-Host "  Failed with tenant ID from URL: $($_.Exception.Message)" -ForegroundColor Gray
+        }
+    }
+
+    # Try without tenant ID (some instances support this)
+    $authUrl = "$BaseUrl/oauth2/token"
+    Write-Host "  Trying: $authUrl" -ForegroundColor Gray
+
     try {
         $response = Invoke-RestMethod -Uri $authUrl -Method Post -Body $body -ContentType 'application/x-www-form-urlencoded'
 
         if ($response.access_token) {
-            Write-Host "Authentication successful!" -ForegroundColor Green
+            Write-Host "  Authentication successful!" -ForegroundColor Green
             return @{
                 AccessToken = $response.access_token
                 TokenType = $response.token_type
@@ -173,35 +195,47 @@ function Get-ProcessManagerToken {
         }
     }
     catch {
-        Write-Error "Authentication failed: $($_.Exception.Message)"
+        Write-Host "  Failed without tenant ID: $($_.Exception.Message)" -ForegroundColor Gray
+    }
 
-        # Try to extract tenant from the base URL by making a request to the site
-        try {
-            $mainPage = Invoke-WebRequest -Uri $BaseUrl -UseBasicParsing
-            if ($mainPage.Content -match '/([a-f0-9]{32})/') {
-                $tenantId = $matches[1]
-                Write-Host "Found tenant ID: $tenantId" -ForegroundColor Cyan
+    # Try to extract tenant from the main page
+    Write-Host "  Attempting to discover tenant ID from main page..." -ForegroundColor Gray
+    try {
+        $mainPage = Invoke-WebRequest -Uri $BaseUrl -UseBasicParsing
+        if ($mainPage.Content -match '/([a-f0-9]{32})/') {
+            $discoveredTenantId = $matches[1]
+            Write-Host "  Found tenant ID: $discoveredTenantId" -ForegroundColor Cyan
 
-                $authUrl = "$BaseUrl/$tenantId/oauth2/token"
-                $response = Invoke-RestMethod -Uri $authUrl -Method Post -Body $body -ContentType 'application/x-www-form-urlencoded'
+            $authUrl = "$BaseUrl/$discoveredTenantId/oauth2/token"
+            Write-Host "  Trying: $authUrl" -ForegroundColor Gray
 
-                if ($response.access_token) {
-                    Write-Host "Authentication successful!" -ForegroundColor Green
-                    return @{
-                        AccessToken = $response.access_token
-                        TokenType = $response.token_type
-                        ExpiresIn = $response.expires_in
-                        TenantId = $tenantId
-                    }
+            $response = Invoke-RestMethod -Uri $authUrl -Method Post -Body $body -ContentType 'application/x-www-form-urlencoded'
+
+            if ($response.access_token) {
+                Write-Host "  Authentication successful!" -ForegroundColor Green
+                return @{
+                    AccessToken = $response.access_token
+                    TokenType = $response.token_type
+                    ExpiresIn = $response.expires_in
+                    TenantId = $discoveredTenantId
                 }
             }
         }
-        catch {
-            Write-Error "Could not authenticate. Please verify your credentials and URL."
-            return $null
+        else {
+            Write-Host "  Could not find tenant ID in page content" -ForegroundColor Gray
         }
     }
+    catch {
+        Write-Host "  Failed to discover tenant ID: $($_.Exception.Message)" -ForegroundColor Gray
+    }
 
+    Write-Host ""
+    Write-Host "ERROR: Could not authenticate to Process Manager" -ForegroundColor Red
+    Write-Host "Please verify:" -ForegroundColor Yellow
+    Write-Host "  1. Your URL is correct (e.g., https://demo.promapp.com or https://demo.promapp.com/tenant-id)" -ForegroundColor Yellow
+    Write-Host "  2. Your username and password are correct" -ForegroundColor Yellow
+    Write-Host "  3. You have network access to the Process Manager instance" -ForegroundColor Yellow
+    Write-Host ""
     return $null
 }
 
@@ -214,9 +248,12 @@ function Get-SearchToken {
         [string]$AccessToken
     )
 
-    Write-Host "Authenticating to Search API..." -ForegroundColor Yellow
+    Write-Host "`nAuthenticating to Search API..." -ForegroundColor Yellow
 
     $authUrl = "$SearchEndpoint/api/authentication/$TenantId/$UserId"
+    Write-Host "  Trying: $authUrl" -ForegroundColor Gray
+    Write-Host "  Tenant ID: $TenantId" -ForegroundColor Gray
+    Write-Host "  User ID: $UserId" -ForegroundColor Gray
 
     $headers = @{
         'Authorization' = "Bearer $AccessToken"
@@ -227,17 +264,35 @@ function Get-SearchToken {
         $response = Invoke-RestMethod -Uri $authUrl -Method Post -Headers $headers
 
         if ($response.Status -eq 'Success' -and $response.Message) {
-            Write-Host "Search API authentication successful!" -ForegroundColor Green
+            Write-Host "  Search API authentication successful!" -ForegroundColor Green
             return $response.Message
+        }
+        else {
+            Write-Host "  Unexpected response from Search API" -ForegroundColor Yellow
+            Write-Host "  Response: $($response | ConvertTo-Json -Depth 2)" -ForegroundColor Gray
+            Write-Host "  Will attempt to use main access token for search..." -ForegroundColor Yellow
+            return $AccessToken
         }
     }
     catch {
-        Write-Warning "Search API authentication failed: $($_.Exception.Message)"
-        Write-Host "Will attempt to use main access token for search..." -ForegroundColor Yellow
+        $statusCode = $_.Exception.Response.StatusCode.value__
+        $statusDescription = $_.Exception.Response.StatusDescription
+
+        Write-Host "  Search API authentication failed" -ForegroundColor Yellow
+        Write-Host "  Status Code: $statusCode - $statusDescription" -ForegroundColor Gray
+        Write-Host "  Error: $($_.Exception.Message)" -ForegroundColor Gray
+
+        if ($statusCode -eq 404) {
+            Write-Host ""
+            Write-Host "  NOTE: 404 error usually means:" -ForegroundColor Yellow
+            Write-Host "    - The tenant ID or user ID is incorrect" -ForegroundColor Yellow
+            Write-Host "    - The search endpoint URL is wrong for your region" -ForegroundColor Yellow
+        }
+
+        Write-Host ""
+        Write-Host "  Will attempt to use main access token for search..." -ForegroundColor Cyan
         return $AccessToken
     }
-
-    return $null
 }
 
 # Function to search for processes
@@ -363,10 +418,14 @@ function Main {
     Write-Host "`nUsing search endpoint: $searchEndpoint" -ForegroundColor Cyan
 
     # Authenticate to Process Manager
-    $authResult = Get-ProcessManagerToken -BaseUrl $credentials.BaseUrl -Username $credentials.Username -Password $credentials.Password
+    $authResult = Get-ProcessManagerToken -BaseUrl $credentials.BaseUrl -Username $credentials.Username -Password $credentials.Password -TenantId $credentials.TenantId
 
     if (-not $authResult -or -not $authResult.AccessToken) {
-        Write-Error "Authentication failed. Exiting."
+        Write-Host ""
+        Write-Host "ERROR: Authentication failed. Cannot continue." -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Press any key to exit..." -ForegroundColor Gray
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         return
     }
 
@@ -384,30 +443,55 @@ function Main {
             $tenantId = $authResult.TenantId
         }
         else {
-            Write-Error "Could not determine tenant ID. Exiting."
+            Write-Host ""
+            Write-Host "ERROR: Could not determine tenant ID." -ForegroundColor Red
+            Write-Host "Please provide the full URL including the tenant ID." -ForegroundColor Yellow
+            Write-Host "Example: https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b" -ForegroundColor Yellow
+            Write-Host ""
+            Write-Host "Press any key to exit..." -ForegroundColor Gray
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
             return
         }
     }
 
+    Write-Host ""
     Write-Host "Tenant ID: $tenantId" -ForegroundColor Cyan
 
     # Get user ID from token
-    $tokenParts = $authResult.AccessToken.Split('.')
-    if ($tokenParts.Count -ge 2) {
-        $payload = $tokenParts[1]
-        $padding = (4 - ($payload.Length % 4)) % 4
-        $payload += "=" * $padding
-        $decodedBytes = [System.Convert]::FromBase64String($payload)
-        $decodedJson = [System.Text.Encoding]::UTF8.GetString($decodedBytes)
-        $tokenData = $decodedJson | ConvertFrom-Json
-        $userId = $tokenData.UserId
+    $userId = $null
+    try {
+        $tokenParts = $authResult.AccessToken.Split('.')
+        if ($tokenParts.Count -ge 2) {
+            $payload = $tokenParts[1]
+            $padding = (4 - ($payload.Length % 4)) % 4
+            $payload += "=" * $padding
+            $decodedBytes = [System.Convert]::FromBase64String($payload)
+            $decodedJson = [System.Text.Encoding]::UTF8.GetString($decodedBytes)
+            $tokenData = $decodedJson | ConvertFrom-Json
+            $userId = $tokenData.UserId
+            Write-Host "User ID: $userId" -ForegroundColor Cyan
+        }
+    }
+    catch {
+        Write-Warning "Could not extract User ID from token: $($_.Exception.Message)"
+    }
+
+    if (-not $userId) {
+        Write-Host ""
+        Write-Host "WARNING: Could not determine User ID from token." -ForegroundColor Yellow
+        Write-Host "This may affect search API authentication." -ForegroundColor Yellow
+        Write-Host ""
     }
 
     # Authenticate to Search API
     $searchToken = Get-SearchToken -SearchEndpoint $searchEndpoint -TenantId $tenantId -UserId $userId -AccessToken $authResult.AccessToken
 
     if (-not $searchToken) {
-        Write-Error "Search API authentication failed. Exiting."
+        Write-Host ""
+        Write-Host "ERROR: Search API authentication failed and could not fall back to main token." -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Press any key to exit..." -ForegroundColor Gray
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         return
     }
 
@@ -415,7 +499,11 @@ function Main {
     $redWords = Get-RedWords
 
     if ($redWords.Count -eq 0) {
-        Write-Error "No red flag words specified. Exiting."
+        Write-Host ""
+        Write-Host "ERROR: No red flag words specified." -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Press any key to exit..." -ForegroundColor Gray
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         return
     }
 
@@ -557,7 +645,24 @@ function Main {
     else {
         Write-Host "`nNo processes found containing the specified red flag words." -ForegroundColor Yellow
     }
+
+    Write-Host ""
+    Write-Host "Press any key to exit..." -ForegroundColor Gray
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
 
-# Run the script
-Main
+# Run the script with error handling
+try {
+    Main
+}
+catch {
+    Write-Host ""
+    Write-Host "FATAL ERROR: An unexpected error occurred" -ForegroundColor Red
+    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Stack Trace:" -ForegroundColor Yellow
+    Write-Host $_.ScriptStackTrace -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Press any key to exit..." -ForegroundColor Gray
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+}
