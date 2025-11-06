@@ -20,9 +20,14 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.10
+    Version: 1.11
 
 .CHANGELOG
+    v1.11 - Re-added ProcessSearchFields parameters to search query
+          - Search now includes ProcessSearchFields=1,2,3,4 explicitly
+          - Ensures search looks in: Name, Objective, Activities, Notes/Details
+          - Parameters: IncludedTypes=1&SearchMatchType=0&ProcessSearchFields=1,2,3,4
+          - Updated search configuration display to show field mapping
     v1.10 - CRITICAL FIX: Added CmdletBinding to enable -Verbose parameter
           - Added [CmdletBinding()] attribute to enable common parameters
           - -Verbose flag now actually works and shows debug output
@@ -388,9 +393,9 @@ function Search-Processes {
     $quotedTerm = "`"$SearchTerm`""
     $encodedTerm = [System.Web.HttpUtility]::UrlEncode($quotedTerm)
 
-    # Build the search URL - matching the working implementation from UnpublishedProcessDocuments
-    # Note: ProcessSearchFields are optional and may cause issues on some endpoints
-    $searchUrl = "$SearchEndpoint/fullsearch?SearchCriteria=$encodedTerm&IncludedTypes=1&SearchMatchType=0&pageNumber=$PageNumber"
+    # Build the search URL with all ProcessSearchFields parameters
+    # ProcessSearchFields: 1=Name, 2=Objective, 3=Activities, 4=Notes/Details
+    $searchUrl = "$SearchEndpoint/fullsearch?SearchCriteria=$encodedTerm&IncludedTypes=1&SearchMatchType=0&ProcessSearchFields=1&ProcessSearchFields=2&ProcessSearchFields=3&ProcessSearchFields=4&pageNumber=$PageNumber"
 
     Write-Host "    Search URL: $searchUrl" -ForegroundColor Gray
     Write-Host "    Using token: $($SearchToken.Substring(0, [Math]::Min(30, $SearchToken.Length)))..." -ForegroundColor Gray
@@ -642,7 +647,8 @@ function Main {
     # Search for processes
     Write-Host "`n=== Searching for Processes ===" -ForegroundColor Cyan
     Write-Host "Search Endpoint: $searchEndpoint" -ForegroundColor Gray
-    Write-Host "Parameters: IncludedTypes=1, SearchMatchType=0 (using API defaults for field matching)" -ForegroundColor Gray
+    Write-Host "Parameters: IncludedTypes=1, SearchMatchType=0, ProcessSearchFields=1,2,3,4" -ForegroundColor Gray
+    Write-Host "  ProcessSearchFields: 1=Name, 2=Objective, 3=Activities, 4=Notes/Details" -ForegroundColor Gray
     Write-Host ""
 
     $allResults = @()
