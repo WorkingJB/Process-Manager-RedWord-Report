@@ -25,8 +25,8 @@
 .CHANGELOG
     v1.15 - CRITICAL FIX: Support tenant names in addition to tenant IDs
           - Updated URL parsing to accept both tenant ID (hex) and tenant name formats
-          - Now supports: https://us.promapp.com/gmfinancial (tenant name)
-          - Still supports: https://us.promapp.com/93555a16... (tenant ID)
+          - Now supports: https://au.promapp.com/promapp (tenant name)
+          - Still supports: https://au.promapp.com/93555a16... (tenant ID)
           - Works with all regional URLs: us.promapp.com, eu.promapp.com, au.promapp.com, ca.promapp.com
           - Updated user prompt to show both URL format examples
     v1.14 - CRITICAL FIX: Corrected Review Due Date JSON path mapping
@@ -175,9 +175,9 @@ function Get-ProcessManagerCredentials {
     Write-Host "`n=== Process Manager Red Word Search Tool ===" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "You can enter either:"
-    Write-Host "  - Base URL: https://us.promapp.com"
-    Write-Host "  - Full URL with tenant ID: https://us.promapp.com/93555a16ceb24f139a6e8a40618d3f8b"
-    Write-Host "  - Full URL with tenant name: https://us.promapp.com/gmfinancial"
+    Write-Host "  - Base URL: https://au.promapp.com"
+    Write-Host "  - Full URL with tenant ID: https://au.promapp.com/93555a16ceb24f139a6e8a40618d3f8b"
+    Write-Host "  - Full URL with tenant name: https://au.promapp.com/promapp"
     Write-Host ""
 
     # Get URL
