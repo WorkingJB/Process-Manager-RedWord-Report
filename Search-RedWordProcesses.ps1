@@ -11,7 +11,13 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.0
+    Version: 1.1
+
+.CHANGELOG
+    v1.1 - Fixed URL parsing to support both base URLs and full tenant URLs
+         - Fixed variable name conflict with PowerShell $host variable
+         - Improved tenant ID extraction logic
+    v1.0 - Initial release
 #>
 
 #Requires -Version 5.1
@@ -25,19 +31,48 @@ $RegionalEndpoints = @{
     'au.promapp.com' = 'https://prd-aus-sch.promapp.io'
 }
 
+# Function to parse Process Manager URL and extract base URL and tenant ID
+function Parse-ProcessManagerUrl {
+    param([string]$InputUrl)
+
+    # Validate and clean URL
+    if ($InputUrl -notmatch '^https?://') {
+        $InputUrl = "https://$InputUrl"
+    }
+    $InputUrl = $InputUrl.TrimEnd('/')
+
+    $uri = [System.Uri]$InputUrl
+    $baseUrl = "$($uri.Scheme)://$($uri.Host)"
+
+    # Try to extract tenant ID from URL path
+    $tenantId = $null
+    if ($uri.AbsolutePath -match '^/([a-f0-9]{32})') {
+        $tenantId = $matches[1]
+        Write-Verbose "Extracted tenant ID from URL: $tenantId"
+    }
+
+    return @{
+        BaseUrl = $baseUrl
+        TenantId = $tenantId
+        FullUrl = $InputUrl
+        Hostname = $uri.Host
+    }
+}
+
 # Function to get credentials
 function Get-ProcessManagerCredentials {
     Write-Host "`n=== Process Manager Red Word Search Tool ===" -ForegroundColor Cyan
     Write-Host ""
+    Write-Host "You can enter either:"
+    Write-Host "  - Base URL: https://demo.promapp.com"
+    Write-Host "  - Full URL with tenant: https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b"
+    Write-Host ""
 
     # Get URL
-    $url = Read-Host "Enter your Process Manager URL (e.g., https://demo.promapp.com)"
+    $url = Read-Host "Enter your Process Manager URL"
 
-    # Validate and clean URL
-    if ($url -notmatch '^https?://') {
-        $url = "https://$url"
-    }
-    $url = $url.TrimEnd('/')
+    # Parse the URL
+    $urlInfo = Parse-ProcessManagerUrl -InputUrl $url
 
     # Get credentials
     Write-Host ""
@@ -47,24 +82,23 @@ function Get-ProcessManagerCredentials {
         [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword))
 
     return @{
-        Url = $url
+        BaseUrl = $urlInfo.BaseUrl
+        TenantId = $urlInfo.TenantId
+        Hostname = $urlInfo.Hostname
         Username = $username
         Password = $password
     }
 }
 
-# Function to determine search endpoint from URL
+# Function to determine search endpoint from hostname
 function Get-SearchEndpoint {
-    param([string]$BaseUrl)
+    param([string]$Hostname)
 
-    $uri = [System.Uri]$BaseUrl
-    $host = $uri.Host
-
-    if ($RegionalEndpoints.ContainsKey($host)) {
-        return $RegionalEndpoints[$host]
+    if ($RegionalEndpoints.ContainsKey($Hostname)) {
+        return $RegionalEndpoints[$Hostname]
     }
 
-    Write-Warning "Unknown region for host: $host. Using Demo region endpoint."
+    Write-Warning "Unknown region for hostname: $Hostname. Using Demo region endpoint."
     return $RegionalEndpoints['demo.promapp.com']
 }
 
@@ -325,19 +359,24 @@ function Main {
     $credentials = Get-ProcessManagerCredentials
 
     # Determine search endpoint
-    $searchEndpoint = Get-SearchEndpoint -BaseUrl $credentials.Url
+    $searchEndpoint = Get-SearchEndpoint -Hostname $credentials.Hostname
     Write-Host "`nUsing search endpoint: $searchEndpoint" -ForegroundColor Cyan
 
     # Authenticate to Process Manager
-    $authResult = Get-ProcessManagerToken -BaseUrl $credentials.Url -Username $credentials.Username -Password $credentials.Password
+    $authResult = Get-ProcessManagerToken -BaseUrl $credentials.BaseUrl -Username $credentials.Username -Password $credentials.Password
 
     if (-not $authResult -or -not $authResult.AccessToken) {
         Write-Error "Authentication failed. Exiting."
         return
     }
 
-    # Extract tenant ID from token
-    $tenantId = Get-TenantId -BaseUrl $credentials.Url -AccessToken $authResult.AccessToken
+    # Determine tenant ID (from URL if provided, otherwise from token or auth result)
+    $tenantId = $credentials.TenantId
+
+    if (-not $tenantId) {
+        # Try to extract from token
+        $tenantId = Get-TenantId -BaseUrl $credentials.BaseUrl -AccessToken $authResult.AccessToken
+    }
 
     if (-not $tenantId) {
         # Try to extract from auth result if available
@@ -404,7 +443,7 @@ function Main {
                     if (-not $processCache.ContainsKey($processId)) {
                         # Get detailed process information
                         Write-Verbose "Getting details for process: $($process.Name)"
-                        $processDetails = Get-ProcessDetails -BaseUrl $credentials.Url -TenantId $tenantId -ProcessId $processId -AccessToken $authResult.AccessToken
+                        $processDetails = Get-ProcessDetails -BaseUrl $credentials.BaseUrl -TenantId $tenantId -ProcessId $processId -AccessToken $authResult.AccessToken
 
                         # Cache the process
                         $processCache[$processId] = @{
