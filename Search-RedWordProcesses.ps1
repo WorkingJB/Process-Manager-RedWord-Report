@@ -11,9 +11,14 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.4
+    Version: 1.5
 
 .CHANGELOG
+    v1.5 - CRITICAL FIX: Changed search token request from POST to GET
+         - Reviewed reference implementation in UnpublishedProcessDocuments repo
+         - Search token endpoint requires GET request, not POST
+         - Removed unnecessary Content-Type header from GET request
+         - Added access token preview in debug output
     v1.4 - CRITICAL FIX: Corrected search token authentication endpoint
          - Search token now requested from main site: {BaseUrl}/{TenantId}/search/GetSearchServiceToken
          - Removed incorrect authentication to regional search endpoint
@@ -264,14 +269,14 @@ function Get-SearchToken {
     # The search token endpoint is on the main site, not the regional search endpoint
     $authUrl = "$BaseUrl/$TenantId/search/GetSearchServiceToken"
     Write-Host "  Trying: $authUrl" -ForegroundColor Gray
+    Write-Host "  Using access token: $($AccessToken.Substring(0, [Math]::Min(50, $AccessToken.Length)))..." -ForegroundColor Gray
 
     $headers = @{
         'Authorization' = "Bearer $AccessToken"
-        'Content-Type' = 'application/json'
     }
 
     try {
-        $response = Invoke-RestMethod -Uri $authUrl -Method Post -Headers $headers
+        $response = Invoke-RestMethod -Uri $authUrl -Method Get -Headers $headers
 
         if ($response.Status -eq 'Success' -and $response.Message) {
             Write-Host "  Search service token retrieved successfully!" -ForegroundColor Green
