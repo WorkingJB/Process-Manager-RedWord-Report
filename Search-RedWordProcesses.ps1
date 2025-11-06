@@ -11,9 +11,16 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.2
+    Version: 1.3
 
 .CHANGELOG
+    v1.3 - Fixed Search API query parameters to include all ProcessSearchFields (1,2,3,4)
+         - Ensured search terms are properly quoted for literal matching vs fuzzy
+         - Added token type indicator (dedicated search token vs fallback)
+         - Enhanced search error handling with specific 401/404 guidance
+         - Added search configuration display showing endpoint and parameters
+         - Improved search failure handling to continue with other terms
+         - Better debugging output for search operations
     v1.2 - Enhanced authentication with detailed debugging output
          - Added support for any Process Manager URL (not just demo)
          - Improved error handling with clear user messages
@@ -304,8 +311,15 @@ function Search-Processes {
         [int]$PageNumber = 1
     )
 
-    $encodedTerm = [System.Web.HttpUtility]::UrlEncode("`"$SearchTerm`"")
-    $searchUrl = "$SearchEndpoint/fullsearch?SearchCriteria=$encodedTerm&IncludedTypes=1&SearchMatchType=0&pageNumber=$PageNumber"
+    # Encode the search term with quotes for literal matching
+    $quotedTerm = "`"$SearchTerm`""
+    $encodedTerm = [System.Web.HttpUtility]::UrlEncode($quotedTerm)
+
+    # Build the search URL with all required parameters
+    $searchUrl = "$SearchEndpoint/fullsearch?SearchCriteria=$encodedTerm&IncludedTypes=1&SearchMatchType=0&ProcessSearchFields=1&ProcessSearchFields=2&ProcessSearchFields=3&ProcessSearchFields=4&pageNumber=$PageNumber"
+
+    Write-Verbose "Search URL: $searchUrl"
+    Write-Verbose "Search Term (quoted): $quotedTerm"
 
     $headers = @{
         'Authorization' = "Bearer $SearchToken"
@@ -317,7 +331,29 @@ function Search-Processes {
         return $response
     }
     catch {
-        Write-Warning "Search failed for term '$SearchTerm': $($_.Exception.Message)"
+        $statusCode = $null
+        $statusDescription = $null
+
+        if ($_.Exception.Response) {
+            $statusCode = $_.Exception.Response.StatusCode.value__
+            $statusDescription = $_.Exception.Response.StatusDescription
+        }
+
+        Write-Host "    Search failed for term '$SearchTerm'" -ForegroundColor Yellow
+
+        if ($statusCode) {
+            Write-Host "    Status Code: $statusCode - $statusDescription" -ForegroundColor Gray
+
+            if ($statusCode -eq 401) {
+                Write-Host "    ERROR: Unauthorized (401) - Search token may be invalid or expired" -ForegroundColor Red
+                Write-Host "    This usually means the search authentication token is not working" -ForegroundColor Yellow
+            }
+            elseif ($statusCode -eq 404) {
+                Write-Host "    ERROR: Not Found (404) - Search endpoint may be incorrect" -ForegroundColor Red
+            }
+        }
+
+        Write-Host "    Error: $($_.Exception.Message)" -ForegroundColor Gray
         return $null
     }
 }
@@ -495,6 +531,16 @@ function Main {
         return
     }
 
+    # Show which token we're using
+    if ($searchToken -ne $authResult.AccessToken) {
+        Write-Host "Using dedicated search token" -ForegroundColor Green
+        Write-Host "  Token preview: $($searchToken.Substring(0, [Math]::Min(50, $searchToken.Length)))..." -ForegroundColor Gray
+    }
+    else {
+        Write-Host "Using main access token for search (fallback)" -ForegroundColor Yellow
+        Write-Host "  Token preview: $($searchToken.Substring(0, [Math]::Min(50, $searchToken.Length)))..." -ForegroundColor Gray
+    }
+
     # Get red flag words
     $redWords = Get-RedWords
 
@@ -509,11 +555,15 @@ function Main {
 
     # Search for processes
     Write-Host "`n=== Searching for Processes ===" -ForegroundColor Cyan
+    Write-Host "Search Endpoint: $searchEndpoint" -ForegroundColor Gray
+    Write-Host "Parameters: IncludedTypes=1, SearchMatchType=0, ProcessSearchFields=1,2,3,4" -ForegroundColor Gray
+    Write-Host ""
+
     $allResults = @()
     $processCache = @{}
 
     foreach ($word in $redWords) {
-        Write-Host "`nSearching for: '$word'" -ForegroundColor Yellow
+        Write-Host "Searching for: '$word'" -ForegroundColor Yellow
 
         $pageNumber = 1
         $hasMorePages = $true
@@ -556,7 +606,14 @@ function Main {
                     $hasMorePages = $false
                 }
             }
+            elseif ($searchResult -eq $null) {
+                # Search failed - error already displayed by Search-Processes function
+                Write-Host "  Skipping this search term and continuing..." -ForegroundColor Yellow
+                $hasMorePages = $false
+            }
             else {
+                # Unexpected response format
+                Write-Host "  No results found for '$word'" -ForegroundColor Gray
                 $hasMorePages = $false
             }
         }
