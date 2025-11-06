@@ -1,0 +1,14 @@
+# Sample Red Flag Words File
+# One word or phrase per line
+# Lines starting with # are ignored (comments)
+
+classified
+confidential
+secret
+restricted
+sensitive
+proprietary
+internal only
+trade secret
+privileged
+private
