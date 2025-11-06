@@ -11,9 +11,16 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.5
+    Version: 1.6
 
 .CHANGELOG
+    v1.6 - CRITICAL FIX: Removed ProcessSearchFields parameters causing 404 errors
+         - Reviewed working implementation - ProcessSearchFields not required
+         - Simplified search URL to match reference implementation
+         - Removed ProcessSearchFields=1,2,3,4 from query string
+         - Now uses API default field matching behavior
+         - Added detailed debugging: shows exact URL and token being used
+         - Removed unnecessary Content-Type header from search GET request
     v1.5 - CRITICAL FIX: Changed search token request from POST to GET
          - Reviewed reference implementation in UnpublishedProcessDocuments repo
          - Search token endpoint requires GET request, not POST
@@ -336,15 +343,15 @@ function Search-Processes {
     $quotedTerm = "`"$SearchTerm`""
     $encodedTerm = [System.Web.HttpUtility]::UrlEncode($quotedTerm)
 
-    # Build the search URL with all required parameters
-    $searchUrl = "$SearchEndpoint/fullsearch?SearchCriteria=$encodedTerm&IncludedTypes=1&SearchMatchType=0&ProcessSearchFields=1&ProcessSearchFields=2&ProcessSearchFields=3&ProcessSearchFields=4&pageNumber=$PageNumber"
+    # Build the search URL - matching the working implementation from UnpublishedProcessDocuments
+    # Note: ProcessSearchFields are optional and may cause issues on some endpoints
+    $searchUrl = "$SearchEndpoint/fullsearch?SearchCriteria=$encodedTerm&IncludedTypes=1&SearchMatchType=0&pageNumber=$PageNumber"
 
-    Write-Verbose "Search URL: $searchUrl"
-    Write-Verbose "Search Term (quoted): $quotedTerm"
+    Write-Host "    Search URL: $searchUrl" -ForegroundColor Gray
+    Write-Host "    Using token: $($SearchToken.Substring(0, [Math]::Min(30, $SearchToken.Length)))..." -ForegroundColor Gray
 
     $headers = @{
         'Authorization' = "Bearer $SearchToken"
-        'Content-Type' = 'application/json'
     }
 
     try {
@@ -551,7 +558,7 @@ function Main {
     # Search for processes
     Write-Host "`n=== Searching for Processes ===" -ForegroundColor Cyan
     Write-Host "Search Endpoint: $searchEndpoint" -ForegroundColor Gray
-    Write-Host "Parameters: IncludedTypes=1, SearchMatchType=0, ProcessSearchFields=1,2,3,4" -ForegroundColor Gray
+    Write-Host "Parameters: IncludedTypes=1, SearchMatchType=0 (using API defaults for field matching)" -ForegroundColor Gray
     Write-Host ""
 
     $allResults = @()
