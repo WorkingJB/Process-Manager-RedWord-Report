@@ -20,9 +20,14 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.11
+    Version: 1.12
 
 .CHANGELOG
+    v1.12 - CRITICAL FIX: Fixed date field variable initialization bug
+          - Initialize $publishDateRaw and $reviewDateRaw to $null at start of each loop
+          - Previous bug: variables carried values from previous iterations
+          - This caused incorrect/missing dates in CSV output even when API calls succeeded
+          - Now each process correctly shows its own publish date and review due date
     v1.11 - Re-added ProcessSearchFields parameters to search query
           - Search now includes ProcessSearchFields=1,2,3,4 explicitly
           - Ensures search looks in: Name, Objective, Activities, Notes/Details
@@ -759,6 +764,7 @@ function Main {
 
         # Get publish date from Published object (for published processes)
         $publishDate = ''
+        $publishDateRaw = $null
         if ($detailsData -and $detailsData.processJson) {
             # Debug: Show what fields are available
             Write-Verbose "Process $($searchData.Name) - Available top-level fields in processJson:"
@@ -795,6 +801,7 @@ function Main {
 
         # Get review due date
         $reviewDueDate = ''
+        $reviewDateRaw = $null
         if ($reviewDueData) {
             # Debug: Show what's in the review due response
             Write-Verbose "Review Due Response for $($searchData.Name):"
