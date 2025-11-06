@@ -20,9 +20,15 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.13
+    Version: 1.14
 
 .CHANGELOG
+    v1.14 - CRITICAL FIX: Corrected Review Due Date JSON path mapping
+          - Fixed to use correct API response structure: reviewDue.NextReviewDate
+          - Previous mapping was looking at NextReviewDate directly (missing reviewDue wrapper)
+          - Now correctly extracts review due date from reviewDue object
+          - Kept fallback paths for compatibility with different API versions
+          - Review dates will now populate correctly in CSV output
     v1.13 - CRITICAL FIX: Corrected PublishedDate JSON path mapping
           - Fixed to use correct API response structure: processJson.ProcessApproval.Published.PublishedDate
           - Previous mapping was looking at processJson.Published.PublishedDate (missing ProcessApproval)
@@ -820,7 +826,13 @@ function Main {
             }
 
             # Try multiple possible field names
-            if ($reviewDueData.NextReviewDate) {
+            # Correct path based on API response structure
+            if ($reviewDueData.reviewDue -and $reviewDueData.reviewDue.NextReviewDate) {
+                $reviewDateRaw = $reviewDueData.reviewDue.NextReviewDate
+                Write-Verbose "Found review date in reviewDue.NextReviewDate: $reviewDateRaw"
+            }
+            # Fallback paths for different API versions or structures
+            elseif ($reviewDueData.NextReviewDate) {
                 $reviewDateRaw = $reviewDueData.NextReviewDate
                 Write-Verbose "Found review date in NextReviewDate: $reviewDateRaw"
             }
