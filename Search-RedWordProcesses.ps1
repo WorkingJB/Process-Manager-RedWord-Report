@@ -11,9 +11,14 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.3
+    Version: 1.4
 
 .CHANGELOG
+    v1.4 - CRITICAL FIX: Corrected search token authentication endpoint
+         - Search token now requested from main site: {BaseUrl}/{TenantId}/search/GetSearchServiceToken
+         - Removed incorrect authentication to regional search endpoint
+         - Removed User ID requirement (not needed for search service token)
+         - Searches now use correct flow: main site auth → get search token → use on regional endpoint
     v1.3 - Fixed Search API query parameters to include all ProcessSearchFields (1,2,3,4)
          - Ensured search terms are properly quoted for literal matching vs fuzzy
          - Added token type indicator (dedicated search token vs fallback)
@@ -246,21 +251,19 @@ function Get-ProcessManagerToken {
     return $null
 }
 
-# Function to authenticate with Search API
+# Function to get Search Service Token from main site
 function Get-SearchToken {
     param(
-        [string]$SearchEndpoint,
+        [string]$BaseUrl,
         [string]$TenantId,
-        [int]$UserId,
         [string]$AccessToken
     )
 
-    Write-Host "`nAuthenticating to Search API..." -ForegroundColor Yellow
+    Write-Host "`nGetting Search Service Token..." -ForegroundColor Yellow
 
-    $authUrl = "$SearchEndpoint/api/authentication/$TenantId/$UserId"
+    # The search token endpoint is on the main site, not the regional search endpoint
+    $authUrl = "$BaseUrl/$TenantId/search/GetSearchServiceToken"
     Write-Host "  Trying: $authUrl" -ForegroundColor Gray
-    Write-Host "  Tenant ID: $TenantId" -ForegroundColor Gray
-    Write-Host "  User ID: $UserId" -ForegroundColor Gray
 
     $headers = @{
         'Authorization' = "Bearer $AccessToken"
@@ -271,31 +274,44 @@ function Get-SearchToken {
         $response = Invoke-RestMethod -Uri $authUrl -Method Post -Headers $headers
 
         if ($response.Status -eq 'Success' -and $response.Message) {
-            Write-Host "  Search API authentication successful!" -ForegroundColor Green
+            Write-Host "  Search service token retrieved successfully!" -ForegroundColor Green
+            return $response.Message
+        }
+        elseif ($response.Message) {
+            # Sometimes the response might just have a Message field directly
+            Write-Host "  Search service token retrieved!" -ForegroundColor Green
             return $response.Message
         }
         else {
-            Write-Host "  Unexpected response from Search API" -ForegroundColor Yellow
+            Write-Host "  Unexpected response from search service token endpoint" -ForegroundColor Yellow
             Write-Host "  Response: $($response | ConvertTo-Json -Depth 2)" -ForegroundColor Gray
             Write-Host "  Will attempt to use main access token for search..." -ForegroundColor Yellow
             return $AccessToken
         }
     }
     catch {
-        $statusCode = $_.Exception.Response.StatusCode.value__
-        $statusDescription = $_.Exception.Response.StatusDescription
+        $statusCode = $null
+        $statusDescription = $null
 
-        Write-Host "  Search API authentication failed" -ForegroundColor Yellow
-        Write-Host "  Status Code: $statusCode - $statusDescription" -ForegroundColor Gray
-        Write-Host "  Error: $($_.Exception.Message)" -ForegroundColor Gray
-
-        if ($statusCode -eq 404) {
-            Write-Host ""
-            Write-Host "  NOTE: 404 error usually means:" -ForegroundColor Yellow
-            Write-Host "    - The tenant ID or user ID is incorrect" -ForegroundColor Yellow
-            Write-Host "    - The search endpoint URL is wrong for your region" -ForegroundColor Yellow
+        if ($_.Exception.Response) {
+            $statusCode = $_.Exception.Response.StatusCode.value__
+            $statusDescription = $_.Exception.Response.StatusDescription
         }
 
+        Write-Host "  Failed to get search service token" -ForegroundColor Yellow
+
+        if ($statusCode) {
+            Write-Host "  Status Code: $statusCode - $statusDescription" -ForegroundColor Gray
+
+            if ($statusCode -eq 404) {
+                Write-Host "  NOTE: 404 error - endpoint may not exist on this Process Manager version" -ForegroundColor Yellow
+            }
+            elseif ($statusCode -eq 401) {
+                Write-Host "  NOTE: 401 error - main access token may be invalid" -ForegroundColor Yellow
+            }
+        }
+
+        Write-Host "  Error: $($_.Exception.Message)" -ForegroundColor Gray
         Write-Host ""
         Write-Host "  Will attempt to use main access token for search..." -ForegroundColor Cyan
         return $AccessToken
@@ -493,34 +509,8 @@ function Main {
     Write-Host ""
     Write-Host "Tenant ID: $tenantId" -ForegroundColor Cyan
 
-    # Get user ID from token
-    $userId = $null
-    try {
-        $tokenParts = $authResult.AccessToken.Split('.')
-        if ($tokenParts.Count -ge 2) {
-            $payload = $tokenParts[1]
-            $padding = (4 - ($payload.Length % 4)) % 4
-            $payload += "=" * $padding
-            $decodedBytes = [System.Convert]::FromBase64String($payload)
-            $decodedJson = [System.Text.Encoding]::UTF8.GetString($decodedBytes)
-            $tokenData = $decodedJson | ConvertFrom-Json
-            $userId = $tokenData.UserId
-            Write-Host "User ID: $userId" -ForegroundColor Cyan
-        }
-    }
-    catch {
-        Write-Warning "Could not extract User ID from token: $($_.Exception.Message)"
-    }
-
-    if (-not $userId) {
-        Write-Host ""
-        Write-Host "WARNING: Could not determine User ID from token." -ForegroundColor Yellow
-        Write-Host "This may affect search API authentication." -ForegroundColor Yellow
-        Write-Host ""
-    }
-
-    # Authenticate to Search API
-    $searchToken = Get-SearchToken -SearchEndpoint $searchEndpoint -TenantId $tenantId -UserId $userId -AccessToken $authResult.AccessToken
+    # Get Search Service Token from main site
+    $searchToken = Get-SearchToken -BaseUrl $credentials.BaseUrl -TenantId $tenantId -AccessToken $authResult.AccessToken
 
     if (-not $searchToken) {
         Write-Host ""
