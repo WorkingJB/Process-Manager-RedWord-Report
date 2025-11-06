@@ -1,0 +1,659 @@
+{
+    "success": true,
+    "response": [
+        {
+            "Name": "test Ref 1234 - test",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/81fcbd69-f037-4e66-8298-181de77da5d5?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Library & History Services",
+                "Austin Powers",
+                "Austin Powers",
+                "New Group"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/24396759-e860-4d16-9d1c-2c0eb7e61ccb?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "81fcbd69-f037-4e66-8298-181de77da5d5",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableReferenceNumber": [
+                    "test Ref 1234"
+                ],
+                "SearchableName": [
+                    "test"
+                ]
+            }
+        },
+        {
+            "Name": "Test",
+            "EntityType": "PublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/42bbd53d-2dd8-4c1d-a2d7-cad8898e9859?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Testing Experience"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/7a36943f-018d-4ff2-b279-5d619fac633d?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "42bbd53d-2dd8-4c1d-a2d7-cad8898e9859",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "Activities": [
+                    "(1.0) Test 1"
+                ],
+                "SearchableName": [
+                    "Test"
+                ]
+            }
+        },
+        {
+            "Name": "Test",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/6b78b5ae-d7e5-480e-b385-ff1323c322e1?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Library & History Services",
+                "Lauren Test",
+                "Export Testing"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/54a00216-96c9-4e05-87d0-63cdb426362c?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "6b78b5ae-d7e5-480e-b385-ff1323c322e1",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableObjective": [
+                    "Testing suggestiong"
+                ],
+                "SearchableName": [
+                    "Test"
+                ]
+            }
+        },
+        {
+            "Name": "Test",
+            "EntityType": "PublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/1aa85629-163f-4634-a41d-8e406d235971?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Crestan"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/295b50e5-82c6-46bb-a770-a60f5643630f?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "1aa85629-163f-4634-a41d-8e406d235971",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "Activities": [
+                    "(1.0) Test",
+                    "(2.0) Test"
+                ],
+                "SearchableName": [
+                    "Test"
+                ]
+            }
+        },
+        {
+            "Name": "Test",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/08e85647-a220-4760-880e-30e71dc67a5d?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Testing Experience",
+                "Example Processes"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/ef1593bb-0d0c-46b9-b921-d67c59b2edd6?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "08e85647-a220-4760-880e-30e71dc67a5d",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "Activities": [
+                    "This is a test"
+                ],
+                "SearchableName": [
+                    "Test"
+                ]
+            }
+        },
+        {
+            "Name": "Test",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/25aa0d1e-c34d-46df-9025-cf65e9a4b0a1?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "My Processes",
+                "Testing Group"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/9eab2bff-4078-4ac1-88bc-1bce7be7152e?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "25aa0d1e-c34d-46df-9025-cf65e9a4b0a1",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "SearchableName": [
+                    "Test"
+                ]
+            }
+        },
+        {
+            "Name": "123123123 - JB Testing",
+            "EntityType": "PublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/1304ad20-e1b9-4a89-b379-ddb5581ad94e?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "My Processes"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/f708469e-dd93-4bcd-96c7-433eeb10ea26?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "1304ad20-e1b9-4a89-b379-ddb5581ad94e",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "Tasks": [
+                    "(2.0.a) Test 1 Find CMS",
+                    "(2.0.b) Test 2",
+                    "(2.0.c) Test 3"
+                ],
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "LinkedProcessNames": [
+                    "RDA Test 1"
+                ],
+                "DecisionTexts": [
+                    "Test"
+                ],
+                "DecisionProcessLinks": [
+                    "RDA Test 1"
+                ],
+                "SearchableName": [
+                    "JB Testing"
+                ]
+            }
+        },
+        {
+            "Name": "JB Testing",
+            "EntityType": "PublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/d06d7632-0ddc-4ab9-8b80-85aa6319acc6?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "My Processes"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/f708469e-dd93-4bcd-96c7-433eeb10ea26?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "d06d7632-0ddc-4ab9-8b80-85aa6319acc6",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "Tasks": [
+                    "(2.0.c) Test 3",
+                    "(2.0.b) Test 2",
+                    "(2.0.a) Test 1 Find CMS"
+                ],
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "LinkedProcessNames": [
+                    "RDA Test 1"
+                ],
+                "DecisionTexts": [
+                    "Test"
+                ],
+                "DecisionProcessLinks": [
+                    "RDA Test 1"
+                ],
+                "SearchableName": [
+                    "JB Testing"
+                ]
+            }
+        },
+        {
+            "Name": "testing ",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/9cdaf1a0-7be5-4e2f-b8e7-5a1288a2864c?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Library & History Services",
+                "Austin Powers"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/cd79c8f0-85e9-4e2c-b3d3-1814c869bcc2?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "9cdaf1a0-7be5-4e2f-b8e7-5a1288a2864c",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableObjective": [
+                    "testy test test"
+                ],
+                "SearchableName": [
+                    "testing"
+                ]
+            }
+        },
+        {
+            "Name": "Manage Construction Testing",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/9aca4402-5a99-4fbb-bbd7-8400f1a18449?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "YourCompany Limited",
+                "Other Examples",
+                "Project Delivery Example",
+                "Inspections / Testing Documents",
+                "Earthworks"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/21414b37-7212-42eb-a812-18bd733dbc96?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "9aca4402-5a99-4fbb-bbd7-8400f1a18449",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "Tasks": [
+                    "Confirm Testing Requirements",
+                    "Submit Test Request",
+                    "Review Test Request",
+                    "Conduct Laboratory Testing",
+                    "Transmit Final Test Reports"
+                ],
+                "SearchableObjective": [
+                    "Quality assure the placement of materials during the Fill by performing a series of Construction Tests",
+                    "The types of tests to be performed and the frequency these must occur are mandated in the Specification, for example:|~||~|Structural Fill Type A1:|~|Every 1,500 m3 placed on each 1m lift, complete:|~|  One Nuclear Density Moisture (NDM), and|~|  One Scala|~|"
+                ],
+                "Notes": [
+                    "Not sure how to submit a Test Request",
+                    "Not sure how to publish Test Reports",
+                    "How to Register & Transmit Test Reports",
+                    "Test result outside targets",
+                    "You need to evaluate the test record and indicate the result within one day of the Final Test Record(s) being published."
+                ],
+                "Activities": [
+                    "Plan Construction Testing",
+                    "Raise Test Request",
+                    "Conduct Construction Tests",
+                    "Register Test Reports",
+                    "Interpret Test Results"
+                ],
+                "Background": [
+                    "|~||~||~|DECISIONS|~|*  What tests are needed",
+                    "|~|*  Where to test",
+                    "|~|*  Does the test location comply with the specifications",
+                    "|~|*  Does the test frequency comply with the specifications",
+                    "|~||~||~||~|CONTROLS|~|*  Specification|~|*  Inspection Test Plan (ITP)|~|"
+                ],
+                "SearchableName": [
+                    "Manage Construction Testing"
+                ]
+            }
+        },
+        {
+            "Name": "Test",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/9f1f225c-3816-4bb7-9813-4db1ae7ee57e?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Testing Experience"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/7a36943f-018d-4ff2-b279-5d619fac633d?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "9f1f225c-3816-4bb7-9813-4db1ae7ee57e",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "SearchableName": [
+                    "Test"
+                ]
+            }
+        },
+        {
+            "Name": "RDA Test 1 :: Test 1",
+            "EntityType": "PublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/5ad74f1a-cb9b-4b03-bba0-6afe9ad8ef1e?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "My Processes"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/f708469e-dd93-4bcd-96c7-433eeb10ea26?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "5ad74f1a-cb9b-4b03-bba0-6afe9ad8ef1e",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableObjective": [
+                    "Test how this stuff works."
+                ],
+                "SearchableName": [
+                    "RDA Test 1 :: Test 1"
+                ]
+            }
+        },
+        {
+            "Name": "Test 2",
+            "EntityType": "PublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/e0ec7619-e0d3-448f-b291-a98fd5ffbcbe?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Testing Experience",
+                "Example Processes"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/ef1593bb-0d0c-46b9-b921-d67c59b2edd6?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "e0ec7619-e0d3-448f-b291-a98fd5ffbcbe",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "Tasks": [
+                    "(2.0.a) Test"
+                ],
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "Activities": [
+                    "(1.0) Example  Test",
+                    "(2.0) Testing",
+                    "() JB Testing"
+                ],
+                "SearchableName": [
+                    "Test 2"
+                ]
+            }
+        },
+        {
+            "Name": "testing ",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/dc9e428f-20df-405e-b8fd-d0628be719e3?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Library & History Services",
+                "Austin Powers"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/cd79c8f0-85e9-4e2c-b3d3-1814c869bcc2?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "dc9e428f-20df-405e-b8fd-d0628be719e3",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableObjective": [
+                    "testy test test"
+                ],
+                "SearchableName": [
+                    "testing"
+                ]
+            }
+        },
+        {
+            "Name": "Manage Source Material Testing",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/047c8340-a695-4b1e-9da1-cde28a6aabe0?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "YourCompany Limited",
+                "Other Examples",
+                "Project Delivery Example",
+                "Inspections / Testing Documents",
+                "Earthworks"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/21414b37-7212-42eb-a812-18bd733dbc96?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "047c8340-a695-4b1e-9da1-cde28a6aabe0",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "Tasks": [
+                    "Confirm Source Testing Requirements",
+                    "Submit Test Request",
+                    "Review Test Request",
+                    "Publish Final Test Report(s)",
+                    "Transmit Final Test Reports"
+                ],
+                "SearchableObjective": [
+                    "Determine the suitability of source material using a suite of tests performed during an Earthworks Cut"
+                ],
+                "Notes": [
+                    "Do you know how to notify the Sector Engineer of Source Testing",
+                    "Not sure how to submit a Test Request",
+                    "Not sure how to publish the Test Report(s)",
+                    "How are Test Reports transmitted & registered",
+                    "You need to evaluate the test record and indicate the result within one day of the Final Test Record(s) being published."
+                ],
+                "Activities": [
+                    "Plan Source Testing",
+                    "Raise Test Request",
+                    "Conduct Source Testing (XXX laboratory)",
+                    "Register Test Reports",
+                    "Interpret Test Reports"
+                ],
+                "SearchableName": [
+                    "Manage Source Material Testing"
+                ]
+            }
+        },
+        {
+            "Name": "Testing Champs",
+            "EntityType": "PublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/bb00ce69-db10-48e2-92ba-b713f1b1de5d?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Library & History Services",
+                "Lauren Test",
+                "Group 1 Test"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/a155598a-d9d6-466d-bb3d-5d506dcb9f66?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "bb00ce69-db10-48e2-92ba-b713f1b1de5d",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "Tasks": [
+                    "(1.0.a) Test #Conveyance"
+                ],
+                "SearchableObjective": [
+                    "Testing Champs"
+                ],
+                "Activities": [
+                    "(1.0) test",
+                    "(2.0) Test 2"
+                ],
+                "SearchableName": [
+                    "Testing Champs"
+                ]
+            }
+        },
+        {
+            "Name": "Testing Imports",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/d2319482-e3ae-4262-947b-32883257078a?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Testing Experience",
+                "Example Processes",
+                "Free Trial Tips"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/18815508-9d87-499a-b72d-b2a0ae725357?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "d2319482-e3ae-4262-947b-32883257078a",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "Tasks": [
+                    "Test"
+                ],
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "Activities": [
+                    "Test"
+                ],
+                "SearchableName": [
+                    "Testing Imports"
+                ]
+            }
+        },
+        {
+            "Name": "my test",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/6f118de7-fc41-4eeb-8e4a-1965c7e6fc85?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Process Guidelines",
+                "Test Group"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/b7cf7c60-2a8b-4e4f-89c1-040f4ef2612d?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "6f118de7-fc41-4eeb-8e4a-1965c7e6fc85",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableName": [
+                    "my test"
+                ]
+            }
+        },
+        {
+            "Name": "DeDocument Test",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/bc18b3a1-2c5d-4109-b379-0f0c890c2d86?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "New Group"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/ba16daf7-ea0e-4cd9-a4a8-e33eeac24dbf?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "bc18b3a1-2c5d-4109-b379-0f0c890c2d86",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "Tasks": [
+                    "Test"
+                ],
+                "SearchableObjective": [
+                    "Test"
+                ],
+                "Activities": [
+                    "Test"
+                ],
+                "SearchableName": [
+                    "DeDocument Test"
+                ]
+            }
+        },
+        {
+            "Name": "test",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/94f82fa6-9560-4811-b2f1-72683f4baeab?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "Library & History Services",
+                "Austin Powers",
+                "New Group"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/597fc9e1-370b-4467-90f3-04d66df02f97?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "94f82fa6-9560-4811-b2f1-72683f4baeab",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "SearchableName": [
+                    "test"
+                ]
+            }
+        }
+    ],
+    "paging": {
+        "TotalItemCount": 274,
+        "LastItemOnPage": 20,
+        "IsLastPage": false,
+        "PageNumber": 1
+    },
+    "userFilter": {
+        "PageNumber": 1,
+        "PageSize": 20,
+        "ProcessGroupUniqueId": "",
+        "ExcludeDescendentEntities": false,
+        "SearchCriteria": "Test",
+        "SearchMatchType": 0,
+        "IncludedTypes": [
+            1
+        ],
+        "ProcessSearchFields": [
+            0
+        ]
+    }
+}

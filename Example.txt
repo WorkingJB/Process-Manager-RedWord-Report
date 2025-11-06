@@ -1,0 +1,57 @@
+https://dmo-wus-sch.promapp.io/fullsearch?SearchCriteria=%22Screenshot%202025-11%22&IncludedTypes=1&SearchMatchType=0&pageNumber=1
+
+
+"Screenshot 2025-11"
+
+
+For every document name in the attached CSV, make a call to the Search API with the document name as the search criteria (in ""). Then extract a list of Process Names and IDs, with the related constructed URL ("https://siteURL/process/ID").
+
+
+
+{
+    "success": true,
+    "response": [
+        {
+            "Name": "DeDocument Test",
+            "EntityType": "UnpublishedProcess",
+            "ProcessStateMetadata": [],
+            "ItemUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/Process/bc18b3a1-2c5d-4109-b379-0f0c890c2d86?Area=Process",
+            "BreadCrumbGroupNames": [
+                "Promapp Demo Ltd.",
+                "New Group"
+            ],
+            "ProcessGroupUrl": "https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b/process/group/ba16daf7-ea0e-4cd9-a4a8-e33eeac24dbf?Area=process",
+            "LinkedDocument": null,
+            "AllowEdit": false,
+            "IsFavourite": false,
+            "DocumentUniqueId": null,
+            "ProcessUniqueId": "bc18b3a1-2c5d-4109-b379-0f0c890c2d86",
+            "ProcessGroupUniqueId": null,
+            "HighLights": {
+                "Image": [
+                    "Screenshot 2025-11-03 at 10.48.47"
+                ]
+            }
+        }
+    ],
+    "paging": {
+        "TotalItemCount": 1,
+        "LastItemOnPage": 1,
+        "IsLastPage": true,
+        "PageNumber": 1
+    },
+    "userFilter": {
+        "PageNumber": 1,
+        "PageSize": 20,
+        "ProcessGroupUniqueId": "",
+        "ExcludeDescendentEntities": false,
+        "SearchCriteria": "\u0022Screenshot 2025-11\u0022",
+        "SearchMatchType": 0,
+        "IncludedTypes": [
+            1
+        ],
+        "ProcessSearchFields": [
+            0
+        ]
+    }
+}
