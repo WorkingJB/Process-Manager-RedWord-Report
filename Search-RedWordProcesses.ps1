@@ -9,11 +9,33 @@
 .EXAMPLE
     .\Search-RedWordProcesses.ps1
 
+.EXAMPLE
+    .\Search-RedWordProcesses.ps1 -Verbose
+
+    Run with verbose output to see detailed debugging information including:
+    - API response structures
+    - Available fields in process details
+    - Date field locations
+    - Review due response details
+
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.8
+    Version: 1.9
 
 .CHANGELOG
+    v1.9 - Added extensive debugging for date field extraction
+         - Debug output shows all available fields in API responses
+         - Try multiple possible field names for publish date:
+           * processJson.Published.PublishedDate
+           * processJson.PublishedDate
+           * Published.PublishedDate (top-level)
+         - Try multiple possible field names for review due date:
+           * NextReviewDate
+           * ReviewDueDate
+           * DueDate
+         - Added -Verbose flag support for troubleshooting
+         - Shows which fields are found and their values
+         - Helps diagnose why dates might be missing
     v1.8 - Added enhanced data extraction features
          - Parse variation names from process titles (splits on "::" delimiter)
          - Extract published date from Published.PublishedDate object (ISO format)
@@ -723,8 +745,29 @@ function Main {
 
         # Get publish date from Published object (for published processes)
         $publishDate = ''
-        if ($detailsData -and $detailsData.processJson -and $detailsData.processJson.Published) {
-            $publishDateRaw = $detailsData.processJson.Published.PublishedDate
+        if ($detailsData -and $detailsData.processJson) {
+            # Debug: Show what fields are available
+            Write-Verbose "Process $($searchData.Name) - Available top-level fields in processJson:"
+            if ($detailsData.processJson.PSObject.Properties) {
+                $detailsData.processJson.PSObject.Properties.Name | ForEach-Object {
+                    Write-Verbose "  - $_"
+                }
+            }
+
+            # Try multiple possible locations for published date
+            if ($detailsData.processJson.Published -and $detailsData.processJson.Published.PublishedDate) {
+                $publishDateRaw = $detailsData.processJson.Published.PublishedDate
+                Write-Verbose "Found published date in Published.PublishedDate: $publishDateRaw"
+            }
+            elseif ($detailsData.processJson.PublishedDate) {
+                $publishDateRaw = $detailsData.processJson.PublishedDate
+                Write-Verbose "Found published date in PublishedDate: $publishDateRaw"
+            }
+            elseif ($detailsData.Published -and $detailsData.Published.PublishedDate) {
+                $publishDateRaw = $detailsData.Published.PublishedDate
+                Write-Verbose "Found published date in top-level Published.PublishedDate: $publishDateRaw"
+            }
+
             if ($publishDateRaw) {
                 # Parse and format the date (remove time portion)
                 try {
@@ -738,12 +781,37 @@ function Main {
 
         # Get review due date
         $reviewDueDate = ''
-        if ($reviewDueData -and $reviewDueData.NextReviewDate) {
-            try {
-                $reviewDueDate = ([DateTime]::Parse($reviewDueData.NextReviewDate)).ToString('yyyy-MM-dd')
+        if ($reviewDueData) {
+            # Debug: Show what's in the review due response
+            Write-Verbose "Review Due Response for $($searchData.Name):"
+            Write-Verbose "  Response type: $($reviewDueData.GetType().Name)"
+            if ($reviewDueData.PSObject.Properties) {
+                $reviewDueData.PSObject.Properties | ForEach-Object {
+                    Write-Verbose "  - $($_.Name): $($_.Value)"
+                }
             }
-            catch {
-                $reviewDueDate = $reviewDueData.NextReviewDate
+
+            # Try multiple possible field names
+            if ($reviewDueData.NextReviewDate) {
+                $reviewDateRaw = $reviewDueData.NextReviewDate
+                Write-Verbose "Found review date in NextReviewDate: $reviewDateRaw"
+            }
+            elseif ($reviewDueData.ReviewDueDate) {
+                $reviewDateRaw = $reviewDueData.ReviewDueDate
+                Write-Verbose "Found review date in ReviewDueDate: $reviewDateRaw"
+            }
+            elseif ($reviewDueData.DueDate) {
+                $reviewDateRaw = $reviewDueData.DueDate
+                Write-Verbose "Found review date in DueDate: $reviewDateRaw"
+            }
+
+            if ($reviewDateRaw) {
+                try {
+                    $reviewDueDate = ([DateTime]::Parse($reviewDateRaw)).ToString('yyyy-MM-dd')
+                }
+                catch {
+                    $reviewDueDate = $reviewDateRaw
+                }
             }
         }
 
