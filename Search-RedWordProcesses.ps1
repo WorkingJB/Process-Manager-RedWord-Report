@@ -20,9 +20,14 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.12
+    Version: 1.13
 
 .CHANGELOG
+    v1.13 - CRITICAL FIX: Corrected PublishedDate JSON path mapping
+          - Fixed to use correct API response structure: processJson.ProcessApproval.Published.PublishedDate
+          - Previous mapping was looking at processJson.Published.PublishedDate (missing ProcessApproval)
+          - Now correctly extracts published date from ProcessApproval object
+          - Kept fallback paths for compatibility with different API versions
     v1.12 - CRITICAL FIX: Fixed date field variable initialization bug
           - Initialize $publishDateRaw and $reviewDateRaw to $null at start of each loop
           - Previous bug: variables carried values from previous iterations
@@ -775,17 +780,19 @@ function Main {
             }
 
             # Try multiple possible locations for published date
-            if ($detailsData.processJson.Published -and $detailsData.processJson.Published.PublishedDate) {
+            # Correct path based on API response structure
+            if ($detailsData.processJson.ProcessApproval -and $detailsData.processJson.ProcessApproval.Published -and $detailsData.processJson.ProcessApproval.Published.PublishedDate) {
+                $publishDateRaw = $detailsData.processJson.ProcessApproval.Published.PublishedDate
+                Write-Verbose "Found published date in ProcessApproval.Published.PublishedDate: $publishDateRaw"
+            }
+            # Fallback paths for different API versions or structures
+            elseif ($detailsData.processJson.Published -and $detailsData.processJson.Published.PublishedDate) {
                 $publishDateRaw = $detailsData.processJson.Published.PublishedDate
                 Write-Verbose "Found published date in Published.PublishedDate: $publishDateRaw"
             }
             elseif ($detailsData.processJson.PublishedDate) {
                 $publishDateRaw = $detailsData.processJson.PublishedDate
                 Write-Verbose "Found published date in PublishedDate: $publishDateRaw"
-            }
-            elseif ($detailsData.Published -and $detailsData.Published.PublishedDate) {
-                $publishDateRaw = $detailsData.Published.PublishedDate
-                Write-Verbose "Found published date in top-level Published.PublishedDate: $publishDateRaw"
             }
 
             if ($publishDateRaw) {
