@@ -20,9 +20,14 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.9
+    Version: 1.10
 
 .CHANGELOG
+    v1.10 - CRITICAL FIX: Added CmdletBinding to enable -Verbose parameter
+          - Added [CmdletBinding()] attribute to enable common parameters
+          - -Verbose flag now actually works and shows debug output
+          - Write-Verbose statements now output when -Verbose is used
+          - This was preventing all debugging output from v1.9
     v1.9 - Added extensive debugging for date field extraction
          - Debug output shows all available fields in API responses
          - Try multiple possible field names for publish date:
@@ -87,6 +92,9 @@
          - Improved tenant ID extraction logic
     v1.0 - Initial release
 #>
+
+[CmdletBinding()]
+param()
 
 #Requires -Version 5.1
 
