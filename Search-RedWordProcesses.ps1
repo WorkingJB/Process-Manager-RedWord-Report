@@ -11,9 +11,16 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.6
+    Version: 1.7
 
 .CHANGELOG
+    v1.7 - CRITICAL FIX: Corrected process details API endpoint
+         - Fixed URL from /api/Process/ to /Api/v1/Processes/
+         - Changes: capital 'A' in Api, added v1, made Processes plural
+         - Verified against API spec: /{tenant}/Api/v1/Processes/{processId}
+         - Confirmed using correct token (site auth token, not search token)
+         - Enhanced error output showing URL and status code for debugging
+         - Removed unnecessary Content-Type header from GET request
     v1.6 - CRITICAL FIX: Removed ProcessSearchFields parameters causing 404 errors
          - Reviewed working implementation - ProcessSearchFields not required
          - Simplified search URL to match reference implementation
@@ -395,11 +402,13 @@ function Get-ProcessDetails {
         [string]$AccessToken
     )
 
-    $apiUrl = "$BaseUrl/$TenantId/api/Process/$ProcessId"
+    # Correct API endpoint: /Api/v1/Processes/ (capital A, v1, plural)
+    $apiUrl = "$BaseUrl/$TenantId/Api/v1/Processes/$ProcessId"
+
+    Write-Verbose "Getting process details: $apiUrl"
 
     $headers = @{
         'Authorization' = "Bearer $AccessToken"
-        'Content-Type' = 'application/json'
     }
 
     try {
@@ -407,7 +416,17 @@ function Get-ProcessDetails {
         return $response
     }
     catch {
-        Write-Warning "Failed to get process details for ID $ProcessId : $($_.Exception.Message)"
+        $statusCode = $null
+        if ($_.Exception.Response) {
+            $statusCode = $_.Exception.Response.StatusCode.value__
+        }
+
+        Write-Host "      ERROR: Failed to get process details for $ProcessId" -ForegroundColor Red
+        if ($statusCode) {
+            Write-Host "      Status Code: $statusCode" -ForegroundColor Gray
+        }
+        Write-Host "      URL: $apiUrl" -ForegroundColor Gray
+        Write-Host "      Error: $($_.Exception.Message)" -ForegroundColor Gray
         return $null
     }
 }
