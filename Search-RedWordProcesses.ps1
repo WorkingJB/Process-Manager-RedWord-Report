@@ -20,9 +20,15 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.14
+    Version: 1.15
 
 .CHANGELOG
+    v1.15 - CRITICAL FIX: Support tenant names in addition to tenant IDs
+          - Updated URL parsing to accept both tenant ID (hex) and tenant name formats
+          - Now supports: https://us.promapp.com/gmfinancial (tenant name)
+          - Still supports: https://us.promapp.com/93555a16... (tenant ID)
+          - Works with all regional URLs: us.promapp.com, eu.promapp.com, au.promapp.com, ca.promapp.com
+          - Updated user prompt to show both URL format examples
     v1.14 - CRITICAL FIX: Corrected Review Due Date JSON path mapping
           - Fixed to use correct API response structure: reviewDue.NextReviewDate
           - Previous mapping was looking at NextReviewDate directly (missing reviewDue wrapper)
@@ -141,11 +147,19 @@ function Parse-ProcessManagerUrl {
     $uri = [System.Uri]$InputUrl
     $baseUrl = "$($uri.Scheme)://$($uri.Host)"
 
-    # Try to extract tenant ID from URL path
+    # Try to extract tenant ID or tenant name from URL path
+    # Supports both formats:
+    #   - Hex tenant ID: /93555a16ceb24f139a6e8a40618d3f8b
+    #   - Tenant name: /gmfinancial
     $tenantId = $null
-    if ($uri.AbsolutePath -match '^/([a-f0-9]{32})') {
+    if ($uri.AbsolutePath -match '^/([a-zA-Z0-9\-_]+)') {
         $tenantId = $matches[1]
-        Write-Verbose "Extracted tenant ID from URL: $tenantId"
+        # Determine if it's a hex ID or a name
+        if ($tenantId -match '^[a-f0-9]{32}$') {
+            Write-Verbose "Extracted tenant ID (hex) from URL: $tenantId"
+        } else {
+            Write-Verbose "Extracted tenant name from URL: $tenantId"
+        }
     }
 
     return @{
@@ -161,8 +175,9 @@ function Get-ProcessManagerCredentials {
     Write-Host "`n=== Process Manager Red Word Search Tool ===" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "You can enter either:"
-    Write-Host "  - Base URL: https://demo.promapp.com"
-    Write-Host "  - Full URL with tenant: https://demo.promapp.com/93555a16ceb24f139a6e8a40618d3f8b"
+    Write-Host "  - Base URL: https://us.promapp.com"
+    Write-Host "  - Full URL with tenant ID: https://us.promapp.com/93555a16ceb24f139a6e8a40618d3f8b"
+    Write-Host "  - Full URL with tenant name: https://us.promapp.com/gmfinancial"
     Write-Host ""
 
     # Get URL
