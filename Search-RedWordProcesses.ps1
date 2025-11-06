@@ -11,9 +11,17 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.7
+    Version: 1.8
 
 .CHANGELOG
+    v1.8 - Added enhanced data extraction features
+         - Parse variation names from process titles (splits on "::" delimiter)
+         - Extract published date from Published.PublishedDate object (ISO format)
+         - Added review due date API call to /{tenant}/Api/v1/Processes/{id}/ReviewDue
+         - Calculate review status (In Date/Out of Date) based on review due date
+         - Added Review Due Date column to CSV output
+         - Format all dates as yyyy-MM-dd for consistency
+         - Process titles now separated from variation names in output
     v1.7 - CRITICAL FIX: Corrected process details API endpoint
          - Fixed URL from /api/Process/ to /Api/v1/Processes/
          - Changes: capital 'A' in Api, added v1, made Processes plural
@@ -431,6 +439,33 @@ function Get-ProcessDetails {
     }
 }
 
+# Function to get process review due date
+function Get-ProcessReviewDue {
+    param(
+        [string]$BaseUrl,
+        [string]$TenantId,
+        [string]$ProcessId,
+        [string]$AccessToken
+    )
+
+    $apiUrl = "$BaseUrl/$TenantId/Api/v1/Processes/$ProcessId/ReviewDue"
+
+    Write-Verbose "Getting review due date: $apiUrl"
+
+    $headers = @{
+        'Authorization' = "Bearer $AccessToken"
+    }
+
+    try {
+        $response = Invoke-RestMethod -Uri $apiUrl -Method Get -Headers $headers
+        return $response
+    }
+    catch {
+        Write-Verbose "Could not get review due date for $ProcessId : $($_.Exception.Message)"
+        return $null
+    }
+}
+
 # Function to determine process status
 function Get-ProcessStatus {
     param(
@@ -604,10 +639,14 @@ function Main {
                         Write-Verbose "Getting details for process: $($process.Name)"
                         $processDetails = Get-ProcessDetails -BaseUrl $credentials.BaseUrl -TenantId $tenantId -ProcessId $processId -AccessToken $authResult.AccessToken
 
+                        # Get review due date
+                        $reviewDue = Get-ProcessReviewDue -BaseUrl $credentials.BaseUrl -TenantId $tenantId -ProcessId $processId -AccessToken $authResult.AccessToken
+
                         # Cache the process
                         $processCache[$processId] = @{
                             SearchResult = $process
                             Details = $processDetails
+                            ReviewDue = $reviewDue
                             RedWords = @($word)
                         }
                     }
@@ -647,11 +686,21 @@ function Main {
     foreach ($entry in $processCache.GetEnumerator()) {
         $searchData = $entry.Value.SearchResult
         $detailsData = $entry.Value.Details
+        $reviewDueData = $entry.Value.ReviewDue
         $redWordsFound = $entry.Value.RedWords -join ', '
 
-        # Extract variation name if present
+        # Parse process title and variation name
+        # If the title contains "::", the part after is the variation name
+        $processTitle = $searchData.Name
         $variationName = ''
-        if ($detailsData -and $detailsData.variationSetData) {
+
+        if ($processTitle -match '::') {
+            $parts = $processTitle -split '::', 2
+            $processTitle = $parts[0].Trim()
+            $variationName = $parts[1].Trim()
+        }
+        # Also check variationSetData if no :: in title
+        elseif ($detailsData -and $detailsData.variationSetData) {
             $variationName = $detailsData.variationSetData.VariationName
         }
 
@@ -672,21 +721,53 @@ function Main {
         # Get status
         $status = Get-ProcessStatus -EntityType $searchData.EntityType -State $(if ($detailsData -and $detailsData.processJson) { $detailsData.processJson.State } else { '' })
 
-        # Get publish date (we need to check if there's publish info in the details)
+        # Get publish date from Published object (for published processes)
         $publishDate = ''
-        if ($detailsData -and $detailsData.processJson -and $detailsData.processJson.PublishDate) {
-            $publishDate = $detailsData.processJson.PublishDate
+        if ($detailsData -and $detailsData.processJson -and $detailsData.processJson.Published) {
+            $publishDateRaw = $detailsData.processJson.Published.PublishedDate
+            if ($publishDateRaw) {
+                # Parse and format the date (remove time portion)
+                try {
+                    $publishDate = ([DateTime]::Parse($publishDateRaw)).ToString('yyyy-MM-dd')
+                }
+                catch {
+                    $publishDate = $publishDateRaw
+                }
+            }
         }
 
-        # Get review status (this might not be in the API response, marking as N/A for now)
+        # Get review due date
+        $reviewDueDate = ''
+        if ($reviewDueData -and $reviewDueData.NextReviewDate) {
+            try {
+                $reviewDueDate = ([DateTime]::Parse($reviewDueData.NextReviewDate)).ToString('yyyy-MM-dd')
+            }
+            catch {
+                $reviewDueDate = $reviewDueData.NextReviewDate
+            }
+        }
+
+        # Determine review status based on review due date
         $reviewStatus = 'N/A'
-        if ($detailsData -and $detailsData.processJson -and $detailsData.processJson.ReviewStatus) {
-            $reviewStatus = $detailsData.processJson.ReviewStatus
+        if ($reviewDueDate -ne '') {
+            try {
+                $reviewDate = [DateTime]::Parse($reviewDueDate)
+                $today = Get-Date
+                if ($reviewDate -lt $today) {
+                    $reviewStatus = 'Out of Date'
+                }
+                else {
+                    $reviewStatus = 'In Date'
+                }
+            }
+            catch {
+                $reviewStatus = 'Unknown'
+            }
         }
 
         # Create result object
         $result = [PSCustomObject]@{
-            'Process Title' = $searchData.Name
+            'Process Title' = $processTitle
             'Process Variation Name' = $variationName
             'Red Flag Words' = $redWordsFound
             'Process Owner' = $owner
@@ -694,6 +775,7 @@ function Main {
             'Process Group Path' = $groupPath
             'Status' = $status
             'Publish Date' = $publishDate
+            'Review Due Date' = $reviewDueDate
             'Review Status' = $reviewStatus
             'Process URL' = $searchData.ItemUrl
             'Process ID' = $searchData.ProcessUniqueId
