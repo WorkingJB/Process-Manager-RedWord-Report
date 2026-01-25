@@ -20,9 +20,16 @@
 
 .NOTES
     Author: Process Manager Red Word Search Tool
-    Version: 1.15
+    Version: 1.16
 
 .CHANGELOG
+    v1.16 - Token refresh with retry for large dataset searches
+          - Added script-level AuthState to track credentials and tokens
+          - Added Refresh-AuthTokens function to re-authenticate when tokens expire
+          - Modified Search-Processes to automatically retry on 401 Unauthorized errors
+          - When a 401 occurs, tokens are refreshed and the search is retried (max 1 retry)
+          - Process detail and review due API calls now use refreshable tokens
+          - Fixes issue where search token expires during long-running searches
     v1.15 - CRITICAL FIX: Support tenant names in addition to tenant IDs
           - Updated URL parsing to accept both tenant ID (hex) and tenant name formats
           - Now supports: https://au.promapp.com/promapp (tenant name)
@@ -132,6 +139,17 @@ $RegionalEndpoints = @{
     'ca.promapp.com' = 'https://prd-cac-sch.promapp.io'
     'eu.promapp.com' = 'https://prd-neu-sch.promapp.io'
     'au.promapp.com' = 'https://prd-aus-sch.promapp.io'
+}
+
+# Script-level authentication state for token refresh capability
+$script:AuthState = @{
+    BaseUrl = $null
+    TenantId = $null
+    Username = $null
+    Password = $null
+    AccessToken = $null
+    SearchToken = $null
+    SearchEndpoint = $null
 }
 
 # Function to parse Process Manager URL and extract base URL and tenant ID
@@ -411,13 +429,45 @@ function Get-SearchToken {
     }
 }
 
-# Function to search for processes
+# Function to refresh authentication tokens (for handling token expiration during long-running searches)
+function Refresh-AuthTokens {
+    Write-Host "`n  Refreshing authentication tokens..." -ForegroundColor Yellow
+
+    # Re-authenticate to get fresh access token
+    $authResult = Get-ProcessManagerToken -BaseUrl $script:AuthState.BaseUrl -Username $script:AuthState.Username -Password $script:AuthState.Password -TenantId $script:AuthState.TenantId
+
+    if (-not $authResult -or -not $authResult.AccessToken) {
+        Write-Host "  ERROR: Failed to refresh access token" -ForegroundColor Red
+        return $false
+    }
+
+    # Update access token in state
+    $script:AuthState.AccessToken = $authResult.AccessToken
+
+    # Get fresh search token
+    $newSearchToken = Get-SearchToken -BaseUrl $script:AuthState.BaseUrl -TenantId $script:AuthState.TenantId -AccessToken $authResult.AccessToken
+
+    if (-not $newSearchToken) {
+        Write-Host "  ERROR: Failed to refresh search token" -ForegroundColor Red
+        return $false
+    }
+
+    # Update search token in state
+    $script:AuthState.SearchToken = $newSearchToken
+
+    Write-Host "  Tokens refreshed successfully!" -ForegroundColor Green
+    return $true
+}
+
+# Function to search for processes (with automatic token refresh on 401)
 function Search-Processes {
     param(
         [string]$SearchEndpoint,
         [string]$SearchToken,
         [string]$SearchTerm,
-        [int]$PageNumber = 1
+        [int]$PageNumber = 1,
+        [int]$MaxRetries = 1,
+        [int]$CurrentRetry = 0
     )
 
     # Encode the search term with quotes for literal matching
@@ -455,7 +505,24 @@ function Search-Processes {
 
             if ($statusCode -eq 401) {
                 Write-Host "    ERROR: Unauthorized (401) - Search token may be invalid or expired" -ForegroundColor Red
-                Write-Host "    This usually means the search authentication token is not working" -ForegroundColor Yellow
+
+                # Attempt to refresh tokens and retry if we haven't exceeded max retries
+                if ($CurrentRetry -lt $MaxRetries) {
+                    Write-Host "    Attempting to refresh tokens and retry (attempt $($CurrentRetry + 1) of $MaxRetries)..." -ForegroundColor Yellow
+
+                    $refreshSuccess = Refresh-AuthTokens
+
+                    if ($refreshSuccess) {
+                        # Retry with refreshed token from AuthState
+                        return Search-Processes -SearchEndpoint $SearchEndpoint -SearchToken $script:AuthState.SearchToken -SearchTerm $SearchTerm -PageNumber $PageNumber -MaxRetries $MaxRetries -CurrentRetry ($CurrentRetry + 1)
+                    }
+                    else {
+                        Write-Host "    Token refresh failed. Cannot retry search." -ForegroundColor Red
+                    }
+                }
+                else {
+                    Write-Host "    Max retry attempts reached. Search token refresh did not resolve the issue." -ForegroundColor Red
+                }
             }
             elseif ($statusCode -eq 404) {
                 Write-Host "    ERROR: Not Found (404) - Search endpoint may be incorrect" -ForegroundColor Red
@@ -663,6 +730,15 @@ function Main {
         Write-Host "  Token preview: $($searchToken.Substring(0, [Math]::Min(50, $searchToken.Length)))..." -ForegroundColor Gray
     }
 
+    # Populate AuthState for token refresh capability during long-running searches
+    $script:AuthState.BaseUrl = $credentials.BaseUrl
+    $script:AuthState.TenantId = $tenantId
+    $script:AuthState.Username = $credentials.Username
+    $script:AuthState.Password = $credentials.Password
+    $script:AuthState.AccessToken = $authResult.AccessToken
+    $script:AuthState.SearchToken = $searchToken
+    $script:AuthState.SearchEndpoint = $searchEndpoint
+
     # Get red flag words
     $redWords = Get-RedWords
 
@@ -692,7 +768,8 @@ function Main {
         $hasMorePages = $true
 
         while ($hasMorePages) {
-            $searchResult = Search-Processes -SearchEndpoint $searchEndpoint -SearchToken $searchToken -SearchTerm $word -PageNumber $pageNumber
+            # Use AuthState tokens (which may be refreshed on 401 errors)
+            $searchResult = Search-Processes -SearchEndpoint $script:AuthState.SearchEndpoint -SearchToken $script:AuthState.SearchToken -SearchTerm $word -PageNumber $pageNumber
 
             if ($searchResult -and $searchResult.success -and $searchResult.response) {
                 Write-Host "  Found $($searchResult.response.Count) processes on page $pageNumber" -ForegroundColor Gray
@@ -702,12 +779,12 @@ function Main {
 
                     # Check if we already processed this process
                     if (-not $processCache.ContainsKey($processId)) {
-                        # Get detailed process information
+                        # Get detailed process information (use AuthState token which may be refreshed)
                         Write-Verbose "Getting details for process: $($process.Name)"
-                        $processDetails = Get-ProcessDetails -BaseUrl $credentials.BaseUrl -TenantId $tenantId -ProcessId $processId -AccessToken $authResult.AccessToken
+                        $processDetails = Get-ProcessDetails -BaseUrl $script:AuthState.BaseUrl -TenantId $script:AuthState.TenantId -ProcessId $processId -AccessToken $script:AuthState.AccessToken
 
-                        # Get review due date
-                        $reviewDue = Get-ProcessReviewDue -BaseUrl $credentials.BaseUrl -TenantId $tenantId -ProcessId $processId -AccessToken $authResult.AccessToken
+                        # Get review due date (use AuthState token which may be refreshed)
+                        $reviewDue = Get-ProcessReviewDue -BaseUrl $script:AuthState.BaseUrl -TenantId $script:AuthState.TenantId -ProcessId $processId -AccessToken $script:AuthState.AccessToken
 
                         # Cache the process
                         $processCache[$processId] = @{
